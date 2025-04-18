@@ -9,6 +9,8 @@ const require = createRequire(import.meta.url);
 const package_json = require('./package.json');
 const api_token = process.env.API_TOKEN;
 const unlocker_zone = process.env.WEB_UNLOCKER_ZONE || 'mcp_unlocker';
+const dataset_scrape_url = process.env.DATASET_SCRAPE_URL || 'https://api.brightdata.com/datasets/v3/scrape';
+const dataset_api_token = process.env.DATASET_API_TOKEN || api_token;
 
 if (!api_token)
     throw new Error('Cannot run MCP server without API_TOKEN env');
@@ -17,6 +19,12 @@ const api_headers = ()=>({
     'user-agent': `${package_json.name}/${package_json.version}`,
     authorization: `Bearer ${api_token}`
 });
+
+const dataset_api_headers = ()=>({
+    'user-agent': `${package_json.name}/${package_json.version}`,
+    authorization: `Bearer ${dataset_api_token}`
+});
+
 let server = new FastMCP({
     name: 'Bright Data',
     version: package_json.version,
@@ -157,11 +165,11 @@ for (let {dataset_id, id, description, inputs} of datasets)
         parameters: z.object(parameters),
         execute: tool_fn(`web_data_${id}`, async(data)=>{
             let response = await axios({
-                url: 'https://api.brightdata.com/datasets/v3/scrape',
+                url: dataset_scrape_url,
                 params: {dataset_id},
                 method: 'POST',
                 data: [data],
-                headers: api_headers(),
+                headers: dataset_api_headers(),
                 responseType: 'text',
             });
             if (!response.data?.length)
