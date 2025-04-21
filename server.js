@@ -11,6 +11,7 @@ const api_token = process.env.API_TOKEN;
 const unlocker_zone = process.env.WEB_UNLOCKER_ZONE || 'mcp_unlocker';
 const dataset_scrape_url = process.env.DATASET_SCRAPE_URL || 'https://api.brightdata.com/datasets/v3/scrape';
 const dataset_api_token = process.env.DATASET_API_TOKEN || api_token;
+const request_url = process.env.REQUEST_URL || 'https://api.brightdata.com/request';
 
 if (!api_token)
     throw new Error('Cannot run MCP server without API_TOKEN env');
@@ -45,7 +46,7 @@ server.addTool({
     }),
     execute: tool_fn('search_engine', async({query, engine})=>{
         let response = await axios({
-            url: 'https://api.brightdata.com/request',
+            url: request_url,
             method: 'POST',
             data: {
                 url: search_url(engine, query),
@@ -69,7 +70,7 @@ server.addTool({
     parameters: z.object({url: z.string().url()}),
     execute: tool_fn('scrape_as_markdown', async({url})=>{
         let response = await axios({
-            url: 'https://api.brightdata.com/request',
+            url: request_url,
             method: 'POST',
             data: {
                 url,
@@ -92,7 +93,7 @@ server.addTool({
     parameters: z.object({url: z.string().url()}),
     execute: tool_fn('scrape_as_html', async({url})=>{
         let response = await axios({
-            url: 'https://api.brightdata.com/request',
+            url: request_url,
             method: 'POST',
             data: {
                 url,
