@@ -1,6 +1,6 @@
 {
     "name": "@brightdata/mcp",
-    "version": "1.8.0",
+    "version": "1.8.1",
     "description": "An MCP interface into the Bright Data toolset",
     "type": "module",
     "bin": {
