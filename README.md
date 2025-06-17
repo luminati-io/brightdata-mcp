@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/brightdata-brightdata-mcp-badge.png)](https://mseep.ai/app/brightdata-brightdata-mcp)
+
 <p align="center">
   <a href="https://brightdata.com/">
     <img src="https://mintlify.s3.us-west-1.amazonaws.com/brightdata/logo/light.svg" width="300" alt="Bright Data Logo">
