@@ -175,6 +175,63 @@ server.addTool({
 });
 
 server.addTool({
+    name: 'extract',
+    description: 'Scrape a webpage and extract structured data as JSON. '
+        + 'First scrapes the page as markdown, then uses AI sampling to convert '
+        + 'it to structured JSON format. This tool can unlock any webpage even '
+        + 'if it uses bot detection or CAPTCHA.',
+    parameters: z.object({
+        url: z.string().url(),
+        extraction_prompt: z.string().optional().describe(
+            'Custom prompt to guide the extraction process. If not provided, '
+            + 'will extract general structured data from the page.'
+        ),
+    }),
+    execute: tool_fn('extract', async ({ url, extraction_prompt }, ctx) => {
+        let scrape_response = await axios({
+            url: 'https://api.brightdata.com/request',
+            method: 'POST',
+            data: {
+                url,
+                zone: unlocker_zone,
+                format: 'raw',
+                data_format: 'markdown',
+            },
+            headers: api_headers(),
+            responseType: 'text',
+        });
+
+        let markdown_content = scrape_response.data;
+
+        let system_prompt = 'You are a data extraction specialist. You MUST respond with ONLY valid JSON, no other text or formatting. '
+            + 'Extract the requested information from the markdown content and return it as a properly formatted JSON object. '
+            + 'Do not include any explanations, markdown formatting, or text outside the JSON response.';
+
+        let user_prompt = extraction_prompt ||
+            'Extract the requested information from this markdown content and return ONLY a JSON object:';
+
+        let session = server.sessions[0]; // Get the first active session
+        if (!session) throw new Error('No active session available for sampling');
+
+        let sampling_response = await session.requestSampling({
+            messages: [
+                {
+                    role: "user",
+                    content: {
+                        type: "text",
+                        text: `${user_prompt}\n\nMarkdown content:\n${markdown_content}\n\nRemember: Respond with ONLY valid JSON, no other text.`,
+                    },
+                },
+            ],
+            systemPrompt: system_prompt,
+            includeContext: "thisServer",
+        });
+
+        return sampling_response.content.text;
+    }),
+});
+
+server.addTool({
     name: 'session_stats',
     description: 'Tell the user about the tool usage during this session',
     parameters: z.object({}),
